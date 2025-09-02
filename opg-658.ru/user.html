@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет - Система учёта очков ОПГ</title>
+    <link rel="stylesheet" href="user-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="user-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="user-profile">
+                    <div class="avatar-upload" onclick="openAvatarModal()">
+                <div class="user-avatar" id="user-avatar">👤</div>
+                <div class="avatar-overlay">
+                    <div class="avatar-overlay-text">Изменить</div>
+                </div>
+            </div>
+                    <div class="user-info">
+                        <h3 id="user-name">Загрузка...</h3>
+                        <p class="user-role">Участник ОПГ</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="dashboard">
+                    <span class="nav-icon">📊</span>
+                    Дашборд
+                </button>
+                <button class="nav-item" data-tab="history">
+                    <span class="nav-icon">📋</span>
+                    История операций
+                </button>
+                <button class="nav-item" data-tab="notifications">
+                    <span class="nav-icon">🔔</span>
+                    Уведомления
+                    <span class="notification-badge" id="notification-count">0</span>
+                </button>
+                <button class="nav-item" data-tab="achievements">
+                    <span class="nav-icon">🏆</span>
+                    Достижения
+                </button>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <section class="tab-content active" id="dashboard">
+                <header class="content-header">
+                    <h1>Мой дашборд</h1>
+                </header>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon positive">💰</div>
+                        <div class="stat-content">
+                            <h3>Текущий баланс</h3>
+                            <div class="stat-value positive" id="current-balance">+0</div>
+                            <p class="stat-change positive" id="weekly-change">+0 за неделю</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="recent-section">
+                    <div class="section-header">
+                        <h2>Последние операции</h2>
+                        <a href="#" class="view-all-link" onclick="showTab('history')">Посмотреть все</a>
+                    </div>
+                    <div class="recent-list" id="recent-list">
+                        <div class="loading-placeholder">Загрузка последних операций...</div>
+                    </div>
+                </div>
+                <div class="chart-section">
+                    <div class="section-header">
+                        <h2>Активность за неделю</h2>
+                    </div>
+                    <div class="chart-container">
+                        <svg class="chart-svg" width="700" height="300" viewBox="0 0 700 300">
+                        </svg>
+                    </div>
+                    <div id="day-details-modal" class="day-modal">
+                        <div class="day-modal-content">
+                            <div class="day-modal-header">
+                                <h3 id="modal-day-title">Детали дня</h3>
+                                <button class="day-modal-close">&times;</button>
+                            </div>
+                            <div class="day-modal-body">
+                                <div class="day-stats">
+                                    <div class="day-stat positive">
+                                        <span class="day-stat-icon">➕</span>
+                                        <div class="day-stat-info">
+                                            <span class="day-stat-value" id="positive-points">+25</span>
+                                            <span class="day-stat-label">Начислено</span>
+                                        </div>
+                                    </div>
+                                    <div class="day-stat negative">
+                                        <span class="day-stat-icon">➖</span>
+                                        <div class="day-stat-info">
+                                            <span class="day-stat-value" id="negative-points">-10</span>
+                                            <span class="day-stat-label">Списано</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="day-operations">
+                                    <h4>Операции за день:</h4>
+                                    <div id="day-operations-list">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="tab-content" id="history">
+                <header class="content-header">
+                    <h1>История операций</h1>
+                    <div class="header-actions">
+                        <select class="filter-select">
+                            <option value="all">Все операции</option>
+                            <option value="positive">Только начисления</option>
+                            <option value="negative">Только списания</option>
+                        </select>
+                    </div>
+                </header>
+                <div class="history-list" id="history-list">
+                    <div class="loading-placeholder">Загрузка истории операций...</div>
+                </div>
+            </section>
+            <section class="tab-content" id="notifications">
+                <header class="content-header">
+                    <h1>Уведомления</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-outline" onclick="markAllAsRead()">
+                            <span class="btn-icon">✓</span>
+                            Отметить все как прочитанные
+                        </button>
+                    </div>
+                </header>
+                <div class="notifications-list" id="notifications-list">
+                    <div class="loading-placeholder">Загрузка уведомлений...</div>
+                </div>
+            </section>
+            <section class="tab-content" id="achievements">
+                <header class="content-header">
+                    <h1>Достижения</h1>
+                </header>
+                <div class="achievements-grid" id="achievements-grid">
+                    <div class="loading-placeholder">Загрузка достижений...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div class="avatar-upload-modal" id="avatarModal">
+        <div class="avatar-modal-content">
+            <h3>Загрузить аватар</h3>
+            <div class="avatar-upload-area" id="avatarUploadArea">
+                <div class="avatar-upload-text">
+                    Перетащите изображение сюда или нажмите для выбора файла
+                </div>
+                <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+            </div>
+            <div class="avatar-modal-buttons">
+                <button class="avatar-modal-btn primary" onclick="uploadAvatar()">Загрузить</button>
+                <button class="avatar-modal-btn secondary" onclick="closeAvatarModal()">Отмена</button>
+                <button class="avatar-modal-btn secondary" onclick="resetToEmoji()">Сбросить на эмодзи</button>
+            </div>
+        </div>
+    </div>
+    <script src="user.js"></script>
+</body>
+</html>
