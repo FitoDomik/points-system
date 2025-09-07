@@ -7,6 +7,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 require_once 'config/database.php';
+require_once 'config/fcm.php';
 $action = $_GET['action'] ?? '';
 $response = ['success' => false, 'message' => 'Неизвестное действие'];
 try {
@@ -46,6 +47,9 @@ try {
             break;
         case 'mark_all_notifications_read':
             $response = markAllNotificationsRead();
+            break;
+        case 'register_fcm_token':
+            $response = registerFcmToken();
             break;
         case 'test_db':
             $response = testDatabase();
@@ -364,6 +368,23 @@ function markAllNotificationsRead() {
         return ['success' => true, 'message' => 'Все уведомления отмечены как прочитанные'];
     } catch (Exception $e) {
         return ['success' => false, 'message' => 'Ошибка отметки уведомлений: ' . $e->getMessage()];
+    }
+}
+
+function registerFcmToken() {
+    try {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $token = $data['token'] ?? '';
+        if (!$token) return ['success' => false, 'message' => 'Токен не указан'];
+        $user = fetchOne("SELECT id FROM users WHERE role = 'user' ORDER BY id ASC LIMIT 1");
+        $userId = $user ? $user['id'] : null;
+        $exists = fetchOne("SELECT id FROM fcm_tokens WHERE token = ?", [$token]);
+        if (!$exists) {
+            executeQuery("INSERT INTO fcm_tokens (user_id, token, created_at) VALUES (?, ?, NOW())", [$userId, $token]);
+        }
+        return ['success' => true, 'message' => 'Токен зарегистрирован'];
+    } catch (Exception $e) {
+        return ['success' => false, 'message' => 'Ошибка регистрации токена: ' . $e->getMessage()];
     }
 }
 ?>
