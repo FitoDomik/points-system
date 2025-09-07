@@ -85,6 +85,9 @@ function loadTabData(tabName) {
         case 'settings':
             loadSystemSettings();
             break;
+        case 'calculator':
+            calculateUniversalSimple();
+            break;
     }
 }
 async function loadUsers() {
@@ -507,48 +510,51 @@ async function saveSettings() {
     }
 }
 function initializeCalculator() {
-    const anInput = document.getElementById('an-input');
-    const aoInput = document.getElementById('ao-input');
-    if (anInput && aoInput) {
-        anInput.addEventListener('input', calculateEfficiency);
-        aoInput.addEventListener('input', calculateEfficiency);
+    const ids = [
+        'base-points', 'completion', 'quality', 'timeliness',
+        'helpers-count'
+    ];
+    const recalc = () => calculateUniversalSimple();
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', recalc);
+            el.addEventListener('change', recalc);
+        }
+    });
+    calculateUniversalSimple();
+    if (!window.__calcIntervalSet) {
+        window.__calcIntervalSet = true;
+        setInterval(calculateUniversalSimple, 500);
     }
 }
-async function calculateEfficiency() {
-    const anInput = document.getElementById('an-input');
-    const aoInput = document.getElementById('ao-input');
-    const resultElement = document.getElementById('efficiency-result');
-    if (!anInput || !aoInput || !resultElement) return;
-    const an = parseFloat(anInput.value) || 0;
-    const ao = parseFloat(aoInput.value) || 0;
-    if (ao <= 0) {
-        resultElement.textContent = '0';
-        return;
-    }
-    try {
-        const response = await fetch('api.php?action=calculate_points', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                an: an,
-                ao: ao
-            })
-        });
-        const data = await response.json();
-        if (data.success) {
-            resultElement.textContent = data.data.points;
-            resultElement.style.transform = 'scale(1.1)';
-            setTimeout(() => {
-                resultElement.style.transform = 'scale(1)';
-            }, 200);
-        } else {
-            resultElement.textContent = '0';
-        }
-    } catch (error) {
-        resultElement.textContent = '0';
-    }
+function calculateUniversalSimple() {
+    const num = (id, def=0) => {
+        const el = document.getElementById(id);
+        if (!el) return def;
+        const raw = (el.value || '').toString().replace(',', '.');
+        const n = parseFloat(raw);
+        return isNaN(n) ? def : n;
+    };
+    const intNum = (id, def=0) => {
+        const el = document.getElementById(id);
+        if (!el) return def;
+        const raw = (el.value || '').toString().replace(',', '.');
+        const n = parseInt(raw, 10);
+        return isNaN(n) ? def : n;
+    };
+    const P = num('base-points', 0);
+    const c = Math.min(1, Math.max(0, num('completion', 0)));
+    const q = Math.max(0, num('quality', 1));
+    const t = Math.max(0, num('timeliness', 1));
+    const helpers = Math.max(0, intNum('helpers-count', 0));
+    const participants = 1 + helpers;
+    const base = P * c * q * t;
+    let per = participants > 0 ? Math.floor(base / participants) : 0;
+    if (!isFinite(per) || isNaN(per)) per = 0;
+    const total = per * participants;
+    const outMain = document.getElementById('calc-main');
+    if (outMain) outMain.textContent = String(per);
 }
 function showQuickActionModal(action, userId, userName) {
     const modal = document.createElement('div');
